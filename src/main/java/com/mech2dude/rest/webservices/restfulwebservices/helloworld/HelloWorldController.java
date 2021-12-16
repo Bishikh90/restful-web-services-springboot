@@ -22,12 +22,12 @@ public class HelloWorldController {
 //    @RequestMapping(method = RequestMethod.GET, path = "/hello-world")
     @GetMapping(path = "/hello-world")
     public String helloWorld(){
-        return "Hello World";
+        return "Hello World Spring Boot";
     }
 
     @GetMapping(path = "/hello-world-bean")
     public HelloWorldBean helloWorldBean(){
-        return new HelloWorldBean("Hello-world");
+        return new HelloWorldBean("Hello-world-SpringBoot");
     }
 
     @GetMapping(path = "/hello-world/path-variable/{name}")

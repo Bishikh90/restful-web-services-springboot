@@ -10,45 +10,49 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
-public class UserController {
+public class UserJPAResource {
 
     @Autowired
     private UserDaoService userDaoService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     // Retrieve all users
-    @GetMapping("/users")
+    @GetMapping("/jpa/users")
     public List<User> retrieveAllUsers(){
-        return userDaoService.findAll();
+        return userRepository.findAll();
     }
 
     // retrieve user
     // Modified the return type from User to Entity model to
     // check hateoas implementation
-    @GetMapping("/users/{id}")
+    @GetMapping("/jpa/users/{id}")
     public EntityModel<User> retrieveUser(@PathVariable int id){
-        User user = userDaoService.findOne(id);
-        if(user==null){
+        Optional<User> user = userRepository.findById(id);
+        if(!user.isPresent()){
             throw new UserNotFoundException("id-"+ id);
         }
-        EntityModel<User> userEntityModel = EntityModel.of(user);
+        EntityModel<User> userEntityModel = EntityModel.of(user.get());
 
         // lets create a link for all the users
         WebMvcLinkBuilder webMvcLinkBuilder = WebMvcLinkBuilder.
                 linkTo(WebMvcLinkBuilder.methodOn(this.
                         getClass()).retrieveAllUsers());
 
-        userEntityModel.add(webMvcLinkBuilder.withRel("fetch-all-users"));
+        userEntityModel.add(webMvcLinkBuilder.withRel("all-users"));
 
         return userEntityModel;
     }
 
     // input- details of the user
     // Return- CREATED & the created URI
-    @PostMapping("/users")
+    @PostMapping("/jpa/users")
     public ResponseEntity<Object> CreateUser(@Valid @RequestBody User user){
-        User savedUser = userDaoService.save(user);
+        User savedUser = userRepository.save(user);
 
         // show the status message as CREATED
         URI location = ServletUriComponentsBuilder
@@ -61,11 +65,8 @@ public class UserController {
     }
 
     // delete user
-    @DeleteMapping("/users/{id}")
+    @DeleteMapping("/jpa/users/{id}")
     public void deleteUser(@PathVariable int id){
-        User user = userDaoService.deleteById(id);
-        if(user==null){
-            throw new UserNotFoundException("id-"+ id);
-        }
+        userRepository.deleteById(id);
     }
 }
